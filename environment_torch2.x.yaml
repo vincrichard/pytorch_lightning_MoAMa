@@ -1,0 +1,44 @@
+channels:
+  - zeroae
+  - mordred-descriptor
+  - pyg
+  - pytorch
+  - nvidia/label/cuda-11.8.0
+  - conda-forge
+  - acellera
+  - defaults
+dependencies:
+  - cuda=11.8.0
+  # - cudatoolkit=12.1.0
+  - cython=0.29.33
+  - einops=0.7.0
+  - graphviz==7.0.5
+  - ipython=8.18.0
+  - ipython_genutils=0.2.0
+  - ipywidgets=7.8.0
+  - lightning=2.2.1
+  - numpy=1.24.1
+  - networkx=2.8.6
+  - pandas=1.5.2
+  - pip=23.3.1
+  - pyg=2.5.2
+  - pyhumps=1.6.1
+  - python=3.9
+  - python_abi=3.9
+  - pytorch-cluster=1.6.3
+  - pytorch-cuda=11.8
+  # - pytorch-mutex=1.0
+  - pytorch-scatter=2.1.2
+  - pytorch-sparse=0.6.18
+  - pytorch-spline-conv=1.2.2
+  - pytorch==2.2.1
+  - rdkit=2024.03.1
+  - rich=12.6.0
+  - scikit-learn=1.2.1
+  - torchaudio=2.2.1
+  - torchvision=0.17.1
+  - typing-extensions=4.8.0
+  - pip:
+    - aim
+    - onnx
+    - onnxscript

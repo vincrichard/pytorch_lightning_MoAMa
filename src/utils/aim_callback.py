@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import Any, Optional
 from typing_extensions import override
 from collections import defaultdict
 from pathlib import Path
 
 import lightning as L
 from lightning.pytorch.callbacks import Callback
-from aim.pytorch import track_gradients_dists, track_params_dists
 from aim.pytorch_lightning import AimLogger
 from aim import Distribution, Run
 
@@ -28,7 +27,7 @@ def get_run_folder_aim_logger(logger: AimLogger):
 
 class AimParamGradientCallback(Callback):
 
-    def __init__(self, logging_interval: Optional[int] = 1):
+    def __init__(self, logging_interval: Optional[int] = 25):
         super().__init__()
         self.logging_interval = logging_interval
 
@@ -41,8 +40,25 @@ class AimParamGradientCallback(Callback):
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if batch_idx % self.logging_interval == 0:
             logger = self.get_aim_logger(trainer)
-            track_params_dists(trainer.model, logger.experiment)
-            track_gradients_dists(trainer.model, logger.experiment)
+            layers = get_model_layers(trainer.model)
+            self.track_weight_bias_property_layers(
+                logger.experiment, layers, props=["data", "grad"]
+            )
+
+    def track_weight_bias_property_layers(self, run, layers, props):
+        for name, module in layers.items():
+            for wb in ["weight", "biais"]:
+                if hasattr(module, wb) and getattr(module, wb) is not None:
+                    for prop in props:
+                        weight_prop = getattr(module.weight, prop, None)
+                        run.track(
+                            Distribution(weight_prop.cpu().numpy()),
+                            name=name,
+                            context={
+                                "type": prop,
+                                "params": wb,
+                            },
+                        )
 
 
 class AimLayerOutputDisctributionCallback(Callback):
@@ -52,6 +68,7 @@ class AimLayerOutputDisctributionCallback(Callback):
 
         self.output = defaultdict(dict)
         self.hooks = []
+        self.is_enable = 1
 
     def get_aim_logger(self, trainer: L.Trainer):
         for logger in trainer.loggers:
@@ -72,39 +89,35 @@ class AimLayerOutputDisctributionCallback(Callback):
 
     def get_output(self, name):
         def hook(model, input, output):
-            self.output[name] = output.detach().cpu().abs().histc(40, 0, 10).numpy()
-            # self.output[name]["mean"] = output.mean()
-            # self.output[name]["std"] = output.std()
-            # self.output[name] = np.abs(output)
+            if self.is_enable:
+                self.output[name] = output.detach().abs().histc(40, 0, 10)
 
         return hook
 
     @override
+    def on_train_batch_start(
+        self,
+        trainer: L.Trainer,
+        pl_module: L.LightningModule,
+        batch: Any,
+        batch_idx: int,
+    ) -> None:
+        self.is_enable = batch_idx % self.logging_interval == 0
+
+    @override
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
-        if batch_idx % self.logging_interval == 0:
+        if self.is_enable:
             logger = self.get_aim_logger(trainer)
             for name, output in self.output.items():
                 logger.experiment.track(
-                    Distribution(hist=output, bin_range=(0, 10)),
+                    Distribution(hist=output.cpu().numpy(), bin_range=(0, 10)),
                     name=name,
                     context={
                         "type": "data",
                         "params": "output",
                     },
+                    step=batch_idx,
                 )
-
-
-# def track_property_distribution(run, layers, prop, attr):
-#     data = get_property_layers(layers, prop, attr)
-#     for name, params in data.items():
-#         run.track(
-#             Distribution(params[prop]),
-#             name=name,
-#             context={
-#                 'type': 'data',
-#                 'params': 'biases',
-#             }
-#         )
 
 
 def get_model_layers(model, parent_name=None):
@@ -118,19 +131,3 @@ def get_model_layers(model, parent_name=None):
         else:
             layers[layer_name] = m
     return layers
-
-
-# def get_property_layers(layers: Dict[str, torch.nn.Module], prop, attr):
-#     layer_prop = {}
-#     for name, module in layers.items():
-#         prop_value = None
-#         if hasattr(module, prop) and getattr(module, prop) is not None:
-#             prop_value = getattr(getattr(module, prop), attr)
-#             if prop_value is not None:
-#                 layer_prop[name][f"{prop}_{attr}"] = get_pt_tensor(prop_value).numpy()
-#     return layer_prop
-
-
-# Move tensor from GPU to CPU
-# def get_pt_tensor(t):
-#     return t.cpu() if hasattr(t, 'is_cuda') and t.is_cuda else t

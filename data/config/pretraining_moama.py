@@ -17,5 +17,3 @@ batch_size = 256
 
 
 model = dict(type=LitMoAMa, moama=moama, criterion=sce_loss, beta=0.5)
-
-ckpt_path = "logs/MoAMa/pretrain/2024-06-13_23-13/checkpoints/epoch=14-step=117195.ckpt"

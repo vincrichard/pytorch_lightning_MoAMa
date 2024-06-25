@@ -1,4 +1,4 @@
 from src.data.datasets import Tox21
 
 
-tox21_dataset = dict(type=Tox21, path="dataset/tox21/raw/tox21.csv")
+tox21_dataset = dict(type=Tox21, path="data/dataset/tox21.csv")

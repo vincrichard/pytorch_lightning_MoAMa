@@ -12,8 +12,8 @@ with read_base():
     from .datasets.tox21 import tox21_dataset
 
 
-# experiment_dir = "logs/MoaMa_shared_weight/finetune/tox21"
-experiment_dir = "logs/MoaMa_other_extractor/finetune/tox21"
+# experiment_dir = "logs/MoAMa_shared_weight/finetune/tox21"
+experiment_dir = "logs/MoAMa_other_extractor/finetune/tox21"
 devices = [0]
 batch_size = 32
 
@@ -22,12 +22,13 @@ model = dict(
     type=LitFinetune,
     encoder=encoder,
     pooling=dict(type=MeanAggregation),
-    prediction_head=dict(type=torch.nn.Linear, in_features=encoder.emb_dim, out_features=12),
+    prediction_head=dict(
+        type=torch.nn.Linear, in_features=encoder.emb_dim, out_features=12
+    ),
     criterion=dict(type=torch.nn.BCEWithLogitsLoss),
 )
 
 dataset = tox21_dataset
 
-pretrained_model_ckpt_path = (
-    "logs/MoAMa_other_extractor/pretrain/2024-06-13_23-13/checkpoints/epoch=83-step=656292.ckpt"
-)
+# pretrained_model_ckpt_path = "logs/MoAMa/pretrain/2024-06-16_15-16/checkpoints/epoch=94-step=742235.ckpt"
+pretrained_model_ckpt_path = "logs/MoAMa_other_extractor/pretrain/2024-06-13_23-13/checkpoints/epoch=83-step=656292.ckpt"

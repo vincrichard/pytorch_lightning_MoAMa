@@ -25,13 +25,13 @@ class MoAMaBatch(Protocol):
     """Int[torch.Tensor, "2 num_edge"]"""
     edge_attr: Float[torch.Tensor, "num_edge attr_feat"]
     """Float[torch.Tensor, "num_edge attr_feat"]"""
-    batch: Float[torch.Tensor, "num_atom"]
+    batch: Float[torch.Tensor, " num_atom"]
     """Float[torch.Tensor, "num_atom"]"""
     smiles: List[str]
     fingerprint: List[DataStructs.cDataStructs.ExplicitBitVect]
     tanimoto_sim: Float[torch.Tensor, "B B"]
     """Float[torch.Tensor, "B B"]"""
-    node_mask: Bool[torch.Tensor, "num_atom"]
+    node_mask: Bool[torch.Tensor, " num_atom"]
     """Bool[torch.Tensor, "num_atom"]"""
     node_target: Float[torch.Tensor, "num_mask_atom num_atom_type"]
     """Float[torch.Tensor, "B atom_feat"]"""
@@ -54,7 +54,9 @@ class Zinc(Dataset):
         return len(self.smiles)
 
     def __getitem__(self, idx) -> Data:
-        data = self.masking_strategy(self.featurizer(self.smiles[idx]), self.smiles[idx])
+        data = self.masking_strategy(
+            self.featurizer(self.smiles[idx]), self.smiles[idx]
+        )
         data.smiles = self.smiles[idx]
         if self.preprocess_fingerprint:
             data.fingerprint = DataStructs.CreateFromBitString(self.fingerprints[idx])
@@ -64,12 +66,16 @@ class Zinc(Dataset):
 
     def pre_compute_fingerprints(self, path_fingerprint: Optional[str] = None):
         self.path_fingerprint = (
-            path_fingerprint if path_fingerprint is not None else Path(self.dataset_path).parent / "fingerprints.pkl"
+            path_fingerprint
+            if path_fingerprint is not None
+            else Path(self.dataset_path).parent / "fingerprints.pkl"
         )
         self.fingerprints = self.get_fingerprints(self.smiles)
         self.preprocess_fingerprint = True
 
-    def get_fingerprints(self, smiles) -> List[DataStructs.cDataStructs.ExplicitBitVect]:
+    def get_fingerprints(
+        self, smiles
+    ) -> List[DataStructs.cDataStructs.ExplicitBitVect]:
         if Path(self.path_fingerprint).exists():
             return self.load_fingerprints()
         else:
@@ -86,12 +92,17 @@ class Zinc(Dataset):
                 f"Try to delete the file {self.path_fingerprint} and relaunch the training"
             ) from e
 
-    def compute_fingerprints(self, smiles) -> List[DataStructs.cDataStructs.ExplicitBitVect]:
+    def compute_fingerprints(
+        self, smiles
+    ) -> List[DataStructs.cDataStructs.ExplicitBitVect]:
         logger.info("Computing fingeprints...")
         with multiprocessing.Pool(20) as executor:
             fingerprints = [
                 fp.ToBitString()
-                for fp in tqdm(executor.imap(Zinc.get_fingerprint, smiles, chunksize=100), total=len(smiles))
+                for fp in tqdm(
+                    executor.imap(Zinc.get_fingerprint, smiles, chunksize=100),
+                    total=len(smiles),
+                )
             ]
 
         logger.info(f"Saving fingeprints to {self.path_fingerprint}...")
@@ -105,7 +116,7 @@ class Zinc(Dataset):
         return Chem.RDKFingerprint(Chem.MolFromSmiles(smiles))
 
 
-def similarity_collater(batch: List[Data]):
+def similarity_collator(batch: List[Data]):
     batch = Batch.from_data_list(batch)
     batch.tanimoto_sim = compute_batch_tanimoto_similarity(batch)
     return batch
@@ -115,5 +126,7 @@ def compute_batch_tanimoto_similarity(batch: MoAMaBatch) -> Float[torch.Tensor, 
     size_batch = len(batch.smiles)
     tanimoto_sim = np.zeros([size_batch, size_batch])
     for i in range(size_batch):
-        tanimoto_sim[i, :i] = DataStructs.BulkTanimotoSimilarity(batch.fingerprint[i], batch.fingerprint[:i])
+        tanimoto_sim[i, :i] = DataStructs.BulkTanimotoSimilarity(
+            batch.fingerprint[i], batch.fingerprint[:i]
+        )
     return torch.from_numpy(tanimoto_sim)

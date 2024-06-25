@@ -6,10 +6,12 @@ with read_base():
 
 
 experiment_dir = "logs/MoAMa_other_extractor/pretrain"
-devices = [1]
+devices = [2]
 
 dataset.update(
     masking_strategy=dict(
         motif_extractor=dict(type=BricsRingMotifExtractor, motif_depth=5),
     ),
 )
+
+ckpt_path = None

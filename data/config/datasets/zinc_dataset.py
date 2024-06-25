@@ -3,7 +3,7 @@ from src.featurizer.motif_extractor import MoaMAMotifExtractor
 
 from src.data.datasets.zinc import Zinc
 
-dataset_path = "dataset/zinc_standard_agent/processed/smiles.csv"
+dataset_path = "data/dataset/zinc.csv"
 
 motif_extractor = dict(type=MoaMAMotifExtractor, motif_depth=5)
 
@@ -16,4 +16,6 @@ masking_strategy = dict(
     motif_extractor=motif_extractor,
 )
 
-zinc_dataset = dict(type=Zinc, dataset_path=dataset_path, masking_strategy=masking_strategy)
+zinc_dataset = dict(
+    type=Zinc, dataset_path=dataset_path, masking_strategy=masking_strategy
+)

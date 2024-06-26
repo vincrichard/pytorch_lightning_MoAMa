@@ -17,3 +17,5 @@ batch_size = 256
 
 
 model = dict(type=LitMoAMa, moama=moama, criterion=sce_loss, beta=0.5)
+
+ckpt_path = None

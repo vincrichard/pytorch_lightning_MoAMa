@@ -3,7 +3,7 @@ from src.featurizer.motif_extractor import MoaMAMotifExtractor
 
 from src.data.datasets.zinc import Zinc
 
-dataset_path = "data/dataset/zinc.csv"
+dataset_path = "data/datasets/zinc.csv"
 
 motif_extractor = dict(type=MoaMAMotifExtractor, motif_depth=5)
 

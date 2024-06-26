@@ -12,8 +12,9 @@ with read_base():
     from .datasets.tox21 import tox21_dataset
 
 
-# experiment_dir = "logs/MoAMa_shared_weight/finetune/tox21"
-experiment_dir = "logs/MoAMa_other_extractor/finetune/tox21"
+experiment_dir = "logs/MoAMa_shared_weight/finetune/tox21"
+# experiment_dir = "logs/MoAMa/finetune/tox21"
+# experiment_dir = "logs/MoAMa_other_extractor/finetune/tox21"
 devices = [0]
 batch_size = 32
 
@@ -30,5 +31,9 @@ model = dict(
 
 dataset = tox21_dataset
 
-# pretrained_model_ckpt_path = "logs/MoAMa/pretrain/2024-06-16_15-16/checkpoints/epoch=94-step=742235.ckpt"
-pretrained_model_ckpt_path = "logs/MoAMa_other_extractor/pretrain/2024-06-13_23-13/checkpoints/epoch=83-step=656292.ckpt"
+
+pretrained_model_encoder_path = "MoAMa/saved_model/encoder.pth"
+# pretrained_model_ckpt_path = (
+#     "logs/MoAMa/pretrain/2024-06-16_15-16/checkpoints/epoch=94-step=742235.ckpt"
+# )
+# pretrained_model_ckpt_path = "logs/MoAMa_other_extractor/pretrain/2024-06-24_09-42/checkpoints/epoch=98-step=773487.ckpt"

@@ -38,13 +38,13 @@ def train_and_predict_with_seed(
         config.dataset, config.dataset.smiles
     )
     train_dataloader = GraphDataLoader(
-        train_dataset, shuffle=True, batch_size=32, num_workers=4
+        train_dataset, shuffle=True, batch_size=config.batch_size, num_workers=4
     )
     valid_dataloader = GraphDataLoader(
-        valid_dataset, shuffle=False, batch_size=32, num_workers=4
+        valid_dataset, shuffle=False, batch_size=config.batch_size, num_workers=4
     )
     test_dataloader = GraphDataLoader(
-        test_dataset, shuffle=False, batch_size=32, num_workers=4
+        test_dataset, shuffle=False, batch_size=config.batch_size, num_workers=4
     )
 
     # Load model
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             pretrained_model_checkpoint=config.pretrained_model_ckpt_path,
         )
     else:
-        path_pretrained_encoder = ""
+        path_pretrained_encoder = config.pretrained_model_encoder_path
     roc_auc = []
     for seed in range(10):
         logging_dir = f"{experiment_dir}/{seed}"

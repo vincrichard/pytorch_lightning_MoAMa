@@ -15,7 +15,12 @@ moama = dict(
         type=torch.nn.Sequential,
         args=[
             dict(type=torch.nn.PReLU),
-            dict(type=torch.nn.Linear, in_features=emb_dim, out_features=emb_dim, bias=False),
+            dict(
+                type=torch.nn.Linear,
+                in_features=emb_dim,
+                out_features=emb_dim,
+                bias=False,
+            ),
         ],
     ),
     decoder=dict(type=GINConv, emb_dim=emb_dim, out_dim=num_atom_type, aggr="add"),
